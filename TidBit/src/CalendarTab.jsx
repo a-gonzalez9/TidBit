@@ -1,0 +1,346 @@
+import React, { useState } from "react";
+import Modal from "react-modal";
+import { addDays, startOfWeek, format } from "date-fns";
+import Task from "./Task";
+import "./index.css";
+
+Modal.setAppElement("#root");
+
+export default function CalendarTab() {
+  const [tasks, setTasks] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [currentWeek, setCurrentWeek] = useState(new Date());
+
+  const [formData, setFormData] = useState({
+    task: "",
+    date: "",
+    time: "",
+    description: "",
+    priority: "Medium",
+  });
+
+  const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
+  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+
+  const openModal = () => setModalOpen(true);
+  const closeModal = () => setModalOpen(false);
+
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newTask = new Task(
+      formData.task,
+      formData.date,
+      formData.time,
+      formData.description,
+      formData.priority
+    );
+    setTasks([...tasks, newTask]);
+    setFormData({
+      task: "",
+      date: "",
+      time: "",
+      description: "",
+      priority: "Medium",
+    });
+    closeModal();
+  };
+
+  const prevWeek = () => setCurrentWeek((prev) => addDays(prev, -7));
+  const nextWeek = () => setCurrentWeek((prev) => addDays(prev, 7));
+
+  return (
+    <div style={{ display: "flex", height: "100vh", fontFamily: "Montserrat" }}>
+      {/* Sidebar */}
+      <div
+        style={{
+          width: "220px",
+          backgroundColor: "#3c1c7a",
+          color: "white",
+          padding: "1rem",
+          display: "flex",
+          flexDirection: "column",
+          borderTopRightRadius: "20px",
+          borderBottomRightRadius: "20px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            marginBottom: "2rem",
+            textTransform: "lowercase",
+            fontWeight: "bold",
+            fontSize: "1.5rem",
+            fontFamily: "qurova",
+          }}
+        >
+          <img
+            src="/logo.png"
+            alt="TidBit"
+            style={{ width: "40px", marginRight: "0.5rem" }}
+          />
+          tidbit
+        </div>
+        <nav style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          {["task breakdown", "bitbreakdown", "calendar"].map((tab) => (
+            <button
+              key={tab}
+              style={{
+                background: "transparent",
+                color: "white",
+                border: "none",
+                cursor: "pointer",
+                padding: "0.5rem 0.75rem",
+                borderRadius: "12px",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = "white";
+                e.target.style.color = "#3c1c7a";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = "transparent";
+                e.target.style.color = "white";
+              }}
+            >
+              {tab}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Calendar */}
+      <div style={{ flex: 1, padding: "1rem", overflowX: "auto" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "1rem",
+          }}
+        >
+          <h1 style={{ fontSize: "1.5rem", fontFamily: "qurova" }}>
+            {format(currentWeek, "MMMM yyyy")}
+          </h1>
+          <div>
+            <button
+              onClick={prevWeek}
+              style={{ marginRight: "0.5rem", borderRadius: "8px", padding: "0.3rem 0.6rem" }}
+            >
+              &lt;
+            </button>
+            <button
+              onClick={nextWeek}
+              style={{ borderRadius: "8px", padding: "0.3rem 0.6rem" }}
+            >
+              &gt;
+            </button>
+          </div>
+          <button
+            onClick={openModal}
+            style={{
+              backgroundColor: "#3c1c7a",
+              color: "white",
+              padding: "0.5rem 1rem",
+              border: "none",
+              borderRadius: "12px",
+              cursor: "pointer",
+            }}
+          >
+            + Add Task
+          </button>
+        </div>
+
+        {/* Weekly Grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "60px repeat(7, 1fr)",
+            borderTop: "1px solid #ccc",
+            borderLeft: "1px solid #ccc",
+            overflowY: "scroll",
+            height: "calc(100vh - 100px)",
+            borderRadius: "12px",
+          }}
+        >
+          <div></div>
+          {days.map((day) => (
+            <div
+              key={day}
+              style={{
+                borderRight: "1px solid #ccc",
+                borderBottom: "1px solid #ccc",
+                textAlign: "center",
+                fontWeight: "bold",
+                padding: "0.5rem 0",
+                backgroundColor: "#f3f3f3",
+                borderTopRightRadius: "8px",
+                borderTopLeftRadius: "8px",
+              }}
+            >
+              {format(day, "EEE dd")}
+            </div>
+          ))}
+
+          {hours.map((hour) => (
+            <React.Fragment key={hour}>
+              <div
+                style={{
+                  borderRight: "1px solid #ccc",
+                  borderBottom: "1px solid #ccc",
+                  padding: "0.25rem",
+                  textAlign: "center",
+                  fontSize: "0.8rem",
+                  backgroundColor: "#f9f9f9",
+                  borderBottomLeftRadius: "8px",
+                }}
+              >
+                {hour}:00
+              </div>
+              {days.map((day) => {
+                const cellTasks = tasks.filter(
+                  (t) =>
+                    t.date === format(day, "yyyy-MM-dd") &&
+                    parseInt(t.time.split(":")[0]) === hour
+                );
+                return (
+                  <div
+                    key={day + hour}
+                    style={{
+                      borderRight: "1px solid #ccc",
+                      borderBottom: "1px solid #ccc",
+                      minHeight: "50px",
+                      position: "relative",
+                      padding: "2px",
+                      borderRadius: "6px",
+                    }}
+                  >
+                    {cellTasks.map((t, idx) => (
+                      <div
+                        key={idx}
+                        title={t.description}
+                        style={{
+                          position: "absolute",
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          backgroundColor:
+                            t.priority === "High"
+                              ? "#ff9999"
+                              : t.priority === "Low"
+                              ? "#b3ffb3"
+                              : "#ffffb3",
+                          padding: "2px 4px",
+                          borderRadius: "8px",
+                          fontSize: "0.75rem",
+                        }}
+                      >
+                        {t.task}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </React.Fragment>
+          ))}
+        </div>
+
+        {/* Modal */}
+        <Modal
+          isOpen={modalOpen}
+          onRequestClose={closeModal}
+          contentLabel="Add Task"
+          style={{
+            content: {
+              width: "400px",
+              margin: "auto",
+              borderRadius: "12px",
+              padding: "1rem",
+            },
+          }}
+        >
+          <h2>Add Task</h2>
+          <form
+            onSubmit={handleSubmit}
+            style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+          >
+            <label>
+              Task:
+              <input
+                type="text"
+                name="task"
+                value={formData.task}
+                onChange={handleChange}
+                required
+                style={{ width: "100%", borderRadius: "6px", padding: "4px" }}
+              />
+            </label>
+            <label>
+              Date:
+              <input
+                type="date"
+                name="date"
+                value={formData.date}
+                onChange={handleChange}
+                required
+                style={{ width: "100%", borderRadius: "6px", padding: "4px" }}
+              />
+            </label>
+            <label>
+              Time:
+              <input
+                type="time"
+                name="time"
+                value={formData.time}
+                onChange={handleChange}
+                required
+                style={{ width: "100%", borderRadius: "6px", padding: "4px" }}
+              />
+            </label>
+            <label>
+              Description:
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows="3"
+                style={{ width: "100%", borderRadius: "6px", padding: "4px" }}
+              />
+            </label>
+            <label>
+              Priority:
+              <select
+                name="priority"
+                value={formData.priority}
+                onChange={handleChange}
+                style={{ width: "100%", borderRadius: "6px", padding: "4px" }}
+              >
+                <option>High</option>
+                <option>Medium</option>
+                <option>Low</option>
+              </select>
+            </label>
+            <button
+              type="submit"
+              style={{
+                backgroundColor: "#3c1c7a",
+                color: "white",
+                padding: "0.5rem",
+                border: "none",
+                borderRadius: "12px",
+                cursor: "pointer",
+                marginTop: "0.5rem",
+              }}
+            >
+              Save Task
+            </button>
+          </form>
+        </Modal>
+      </div>
+    </div>
+  );
+}
