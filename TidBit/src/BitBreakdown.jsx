@@ -1,81 +1,80 @@
 // BitBreakdown.jsx
 import React, { useState, useEffect } from "react";
 
+// import images
+import dance1 from "./assets/dancefloor1.png";
+import dance2 from "./assets/dancefloor2.png";
+import bit1 from "./assets/dancingbit1.png";
+import bit2 from "./assets/dancingbit2.png";
+
 export default function BitBreakdown() {
-  const images = [
-    "/images/image1.png", // replace with your actual image paths
-    "/images/image2.png",
-  ];
+  const dancefloors = [dance1, dance2];
+  const bits = [bit1, bit2];
 
-  const [currentImage, setCurrentImage] = useState(0);
+  const [bgIndex, setBgIndex] = useState(0);
+  const [bitIndex, setBitIndex] = useState(0);
 
+  // alternate dancefloor every second
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImage((prev) => (prev + 1) % images.length);
-    }, 1000); // 1000ms = 1 second
+    const bgInterval = setInterval(() => {
+      setBgIndex((prev) => (prev + 1) % dancefloors.length);
+    }, 700);
+    return () => clearInterval(bgInterval);
+  }, []);
 
-    return () => clearInterval(interval); // clean up on unmount
+  // alternate bit every 2 seconds
+  useEffect(() => {
+    const bitInterval = setInterval(() => {
+      setBitIndex((prev) => (prev + 1) % bits.length);
+    }, 500);
+    return () => clearInterval(bitInterval);
   }, []);
 
   return (
     <div
       style={{
-        padding: "1rem",
+        flex: 1,
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
         height: "100vh",
       }}
     >
-      <img
-        src={images[currentImage]}
-        alt="Bit Animation"
+      <div
         style={{
-          width: "calc(100% - 240px)", // roughly same size as calendar
-          maxWidth: "800px",
-          borderRadius: "12px",
-          padding: "1rem",
-          objectFit: "cover",
+          position: "relative",
+          width: "100%",
+          maxWidth: "1000px",
+          borderRadius: "16px",
+          overflow: "hidden",
         }}
-      />
+      >
+        {/* background */}
+        <img
+          src={dancefloors[bgIndex]}
+          alt="Dancefloor"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            borderRadius: "16px",
+          }}
+        />
+
+        {/* dancing bit */}
+        <img
+          src={bits[bitIndex]}
+          alt="Dancing Bit"
+          style={{
+            position: "absolute",
+            bottom: "0%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "100%",
+            height: "100%",
+          }}
+        />
+      </div>
     </div>
   );
 }
-
-
-
-// import React, { useState } from "react";
-
-// export default function BitBreakdown() {
-//   const [bits, setBits] = useState([]);
-
-//   const addBit = () => {
-//     const newBit = `💃`; // You can later replace with a dynamic “bit” character
-//     setBits([...bits, newBit]);
-//   };
-
-//   return (
-//     <div style={{ padding: "1rem" }}>
-//       <h1 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>Bit Breakdown</h1>
-//       <button
-//         onClick={addBit}
-//         style={{
-//           backgroundColor: "#0077ff",
-//           color: "white",
-//           padding: "0.5rem 1rem",
-//           border: "none",
-//           borderRadius: "4px",
-//           cursor: "pointer",
-//           marginBottom: "1rem",
-//         }}
-//       >
-//         Complete Task (Add Bit)
-//       </button>
-//       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-//         {bits.map((bit, idx) => (
-//           <span key={idx} style={{ fontSize: "2rem" }}>{bit}</span>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
