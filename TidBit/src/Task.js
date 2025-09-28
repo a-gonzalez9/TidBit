@@ -1,9 +1,10 @@
 export default class Task {
   constructor(task, date, time, description, priority) {
     this.task = task;
-    this.date = date; // yyyy-MM-dd
-    this.time = time; // HH:mm
+    this.date = date;
+    this.time = time;
     this.description = description;
-    this.priority = priority; // "High", "Medium", "Low"
+    this.priority = priority;
+    this.id = Date.now(); // unique id for editing
   }
 }
