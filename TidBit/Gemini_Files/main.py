@@ -13,6 +13,7 @@ def generate_task_breakdown(task_description):
         - Do NOT do self-explanatory steps like “Understand the assignment” or “Gather materials” unless explicitly mentioned.
         - Try to keep below 10 steps unless absolutely necessary.
         - Always add a final step to review and submit the work.
+        - Do not say anything else besides the steps.
         Description: {task_description}
     """
 
