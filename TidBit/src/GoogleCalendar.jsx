@@ -2,10 +2,13 @@ import React, { useEffect, useState } from "react";
 import { gapi } from "gapi-script";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
+import load_dotenv from "dotenv";
+
+load_dotenv();
 
 const clientId =
   "538952701269-4efbddks690vovbc48im0vj08o859ggo.apps.googleusercontent.com";
-const apiKey = "AIzaSyDdzALHQ_MnSHRwM6SYxR5z7qP_tU_r1hI";
+const apiKey = "GEMINI_API_KEY";
 
 export default function GoogleCalendar() {
   const [signedIn, setSignedIn] = useState(false);
