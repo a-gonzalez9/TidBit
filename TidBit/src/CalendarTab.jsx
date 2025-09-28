@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Modal from "react-modal";
 import { addDays, startOfWeek, format, isToday } from "date-fns";
-import Task from "./Task";
+import Task from "./Task.js";
 import "./index.css";
 import { useNavigate } from "react-router-dom";
 
@@ -88,6 +88,23 @@ export default function CalendarTab() {
 
       const result = await response.json();
       console.log("Breakdown from backend:", result);
+
+      const processedTask = result.tasks[result.tasks.length - 1];
+
+      const classNewTask = new Task(
+        updatedTasks.length,
+        newTask.task,
+        newTask.description,
+        newTask.priority,
+        newTask.date,
+        newTask.time,
+        processedTask.breakdown
+      );
+
+      // Save task (Calendar handles localStorage)
+      classNewTask.save();
+      console.log("Updated Tasks:", Task.getAll()); 
+
     } catch (error) {
       console.error("Error sending tasks to backend:", error);
     }
