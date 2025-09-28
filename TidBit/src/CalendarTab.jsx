@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import Modal from "react-modal";
-import { addDays, startOfWeek, format } from "date-fns";
+import { addDays, startOfWeek, format, isToday } from "date-fns";
 import Task from "./Task";
 import "./index.css";
+import { useNavigate } from "react-router-dom";
+
 
 Modal.setAppElement("#root");
 
@@ -10,6 +12,9 @@ export default function CalendarTab() {
   const [tasks, setTasks] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [currentWeek, setCurrentWeek] = useState(new Date());
+  const [editingTaskIndex, setEditingTaskIndex] = useState(null);
+
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     task: "",
@@ -24,8 +29,18 @@ export default function CalendarTab() {
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
-  const openModal = () => setModalOpen(true);
-  const closeModal = () => setModalOpen(false);
+  const openModal = (index = null) => {
+    if (index !== null) {
+      const t = tasks[index];
+      setFormData({ ...t });
+      setEditingTaskIndex(index);
+    }
+    setModalOpen(true);
+  };
+  const closeModal = () => {
+    setEditingTaskIndex(null);
+    setModalOpen(false);
+  };
 
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -56,6 +71,7 @@ export default function CalendarTab() {
       priority: "Medium",
       breakdown: [],
     });
+
     closeModal();
 
     // Send tasks to backend (via Vite proxy)
@@ -86,99 +102,46 @@ export default function CalendarTab() {
   return (
     <div style={{ display: "flex", height: "100vh", fontFamily: "Montserrat" }}>
       {/* Sidebar */}
-      <div
-        style={{
-          width: "220px",
-          backgroundColor: "#3c1c7a",
-          color: "white",
-          padding: "1rem",
-          display: "flex",
-          flexDirection: "column",
-          borderTopRightRadius: "20px",
-          borderBottomRightRadius: "20px",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            marginBottom: "2rem",
-            textTransform: "lowercase",
-            fontWeight: "bold",
-            fontSize: "1.5rem",
-            fontFamily: "qurova",
-          }}
-        >
-          <img
-            src="/logo.png"
-            alt="TidBit"
-            style={{ width: "40px", marginRight: "0.5rem" }}
-          />
-          tidbit
-        </div>
-        <nav style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          {["task breakdown", "bitbreakdown", "calendar"].map((tab) => (
-            <button
-              key={tab}
-              style={{
-                background: "transparent",
-                color: "white",
-                border: "none",
-                cursor: "pointer",
-                padding: "0.5rem 0.75rem",
-                borderRadius: "12px",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background = "white";
-                e.target.style.color = "#3c1c7a";
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = "transparent";
-                e.target.style.color = "white";
-              }}
-            >
-              {tab}
-            </button>
-          ))}
-        </nav>
-      </div>
 
       {/* Calendar */}
-      <div style={{ flex: 1, padding: "1rem", overflowX: "auto" }}>
+      <div style={{ flex: 1, padding: "2rem", overflowX: "auto" }}>
+        {/* Month Navigation */}
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             marginBottom: "1rem",
+            fontFamily: "qurova",
+            fontSize: "1.8rem",
           }}
         >
-          <h1 style={{ fontSize: "1.5rem", fontFamily: "qurova" }}>
-            {format(currentWeek, "MMMM yyyy")}
-          </h1>
           <div>
             <button
               onClick={prevWeek}
-              style={{ marginRight: "0.5rem", borderRadius: "8px", padding: "0.3rem 0.6rem" }}
+              style={{ marginRight: "0.5rem", borderRadius: "8px", padding: "0.3rem 0.6rem", fontSize: "1rem" }}
             >
               &lt;
             </button>
             <button
               onClick={nextWeek}
-              style={{ borderRadius: "8px", padding: "0.3rem 0.6rem" }}
+              style={{ borderRadius: "8px", padding: "0.3rem 0.6rem", fontSize: "1rem" }}
             >
               &gt;
             </button>
           </div>
+          <div>{format(currentWeek, "MMMM")}</div>
           <button
-            onClick={openModal}
+            onClick={() => openModal()}
             style={{
               backgroundColor: "#3c1c7a",
               color: "white",
               padding: "0.5rem 1rem",
               border: "none",
+              fontFamily: "montserrat",
+              fontWeight: "bold",
               borderRadius: "12px",
+              fontSize: "1rem",
               cursor: "pointer",
             }}
           >
@@ -194,11 +157,13 @@ export default function CalendarTab() {
             borderTop: "1px solid #ccc",
             borderLeft: "1px solid #ccc",
             overflowY: "scroll",
-            height: "calc(100vh - 100px)",
+            height: "calc(100vh - 120px)",
             borderRadius: "12px",
           }}
         >
+          {/* Empty corner */}
           <div></div>
+          {/* Day headers */}
           {days.map((day) => (
             <div
               key={day}
@@ -207,16 +172,21 @@ export default function CalendarTab() {
                 borderBottom: "1px solid #ccc",
                 textAlign: "center",
                 fontWeight: "bold",
-                padding: "0.5rem 0",
-                backgroundColor: "#f3f3f3",
+                backgroundColor: isToday(day) ? "#dcd0ff" : "#f3f3f3",
+                padding: "0.25rem",
                 borderTopRightRadius: "8px",
                 borderTopLeftRadius: "8px",
+                position: "sticky", 
+                top: 0,
+                zIndex: 3,
               }}
             >
-              {format(day, "EEE dd")}
+              <div style={{ fontSize: "0.75rem" }}>{format(day, "EEE")}</div>
+              <div style={{ fontSize: "1.2rem" }}>{format(day, "dd")}</div>
             </div>
           ))}
 
+          {/* Hours and tasks */}
           {hours.map((hour) => (
             <React.Fragment key={hour}>
               <div
@@ -227,7 +197,12 @@ export default function CalendarTab() {
                   textAlign: "center",
                   fontSize: "0.8rem",
                   backgroundColor: "#f9f9f9",
-                  borderBottomLeftRadius: "8px",
+                  position: "sticky",
+                  left: 0,
+                  zIndex: 2,
+                  display: "flex",   
+                  alignItems: "center", 
+                  justifyContent: "center",
                 }}
               >
                 {hour}:00
@@ -254,6 +229,7 @@ export default function CalendarTab() {
                       <div
                         key={idx}
                         title={t.description}
+                        onClick={() => openModal(tasks.indexOf(t))}
                         style={{
                           position: "absolute",
                           top: 0,
@@ -264,10 +240,12 @@ export default function CalendarTab() {
                               ? "#ff9999"
                               : t.priority === "Low"
                               ? "#b3ffb3"
-                              : "#ffffb3",
+                              : "#dcd0ff",
                           padding: "2px 4px",
                           borderRadius: "8px",
                           fontSize: "0.75rem",
+                          cursor: "pointer",
+                          transition: "all 0.2s",
                         }}
                       >
                         {t.task}
@@ -287,14 +265,16 @@ export default function CalendarTab() {
           contentLabel="Add Task"
           style={{
             content: {
-              width: "400px",
+              width: "calc(100% - 240px)",
+              maxWidth: "500px",
+              height: "fit-content",
               margin: "auto",
               borderRadius: "12px",
               padding: "1rem",
             },
           }}
         >
-          <h2>Add Task</h2>
+          <h2>{editingTaskIndex !== null ? "Edit Task" : "Add Task"}</h2>
           <form
             onSubmit={handleSubmit}
             style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
