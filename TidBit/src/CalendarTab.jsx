@@ -17,6 +17,7 @@ export default function CalendarTab() {
     time: "",
     description: "",
     priority: "Medium",
+    breakdown: [],
   });
 
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
@@ -29,25 +30,55 @@ export default function CalendarTab() {
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newTask = new Task(
-      formData.task,
-      formData.date,
-      formData.time,
-      formData.description,
-      formData.priority
-    );
-    setTasks([...tasks, newTask]);
+
+    // Create new task object
+    const newTask = {
+      task: formData.task,
+      date: formData.date,
+      time: formData.time,
+      description: formData.description,
+      priority: formData.priority,
+      breakdown: [],
+    };
+
+    // Update state
+    const updatedTasks = [...tasks, newTask];
+    setTasks(updatedTasks);
+
+    // Reset form and close modal
     setFormData({
       task: "",
       date: "",
       time: "",
       description: "",
       priority: "Medium",
+      breakdown: [],
     });
     closeModal();
+
+    // Send tasks to backend (via Vite proxy)
+    try {
+      const response = await fetch("/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedTasks),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("Breakdown from backend:", result);
+    } catch (error) {
+      console.error("Error sending tasks to backend:", error);
+    }
+
+    console.log("Worked!");
   };
+
 
   const prevWeek = () => setCurrentWeek((prev) => addDays(prev, -7));
   const nextWeek = () => setCurrentWeek((prev) => addDays(prev, 7));
