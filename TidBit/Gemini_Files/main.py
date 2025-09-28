@@ -51,6 +51,29 @@ def receive_tasks():
 
     return jsonify({"tasks": processed_tasks}), 200
 
+@app.route("/mentor", methods=["POST"])
+def mentor():
+    data = request.json
+    question = data.get("question", "")
+
+    if not question:
+        return jsonify({"answer": "No question provided"}), 400
+
+    # Call Gemini API
+    try:
+        prompt = f"""
+         - Answer this user's question in a helpful, concise way. 
+         - Keep it concise or bulleted/numbered when applicable.
+         - Be friendly and supportive! Try to encourage, but be brief.
+         - Don't use bold, italics, or other formatting.
+         - Format it to be like a quick text, straight to the point:\n\n{question}"""
+        response = model.generate_content(prompt)
+        answer_text = response.text
+    except Exception as e:
+        return jsonify({"answer": f"Error calling AI: {str(e)}"}), 500
+
+    return jsonify({"answer": answer_text})
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
