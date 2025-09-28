@@ -1,18 +1,28 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import logo from "./assets/logo.png";
 import "./CalendarTab.jsx";
 
 export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const tabs = ["calendar", "task breakdown", "mentor chat", "bit breakdown"];
+  const tabs = ["calendar", "task breakdown", "a bit of advice", "bit breakdown"];
   const routeMap = {
     "calendar": "/",
     "task breakdown": "/tasks",
-    "mentor chat": "/mentor",
+    "a bit of advice": "/mentor",
     "bit breakdown": "/bits",
   };
+
+  // Handle background fade
+  useEffect(() => {
+    if (location.pathname === "/bits") {
+      document.body.style.backgroundColor = "#110529"; // dark gray
+    } else {
+      document.body.style.backgroundColor = "white";
+    }
+  }, [location.pathname]);
 
   return (
     <div style={{ display: "flex", height: "100vh", fontFamily: "Montserrat" }}>
@@ -40,14 +50,14 @@ export default function Layout() {
             textTransform: "lowercase",
           }}
         >
-          <img src="/logo.png" alt="TidBit" style={{ width: "40px", marginRight: "0.5rem" }} />
+          <img src={logo} alt="TidBit" style={{ width: "60px", marginRight: "1rem" }} />
           tidbit
         </div>
 
         <nav style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
           {tabs.map((tab) => {
             const route = routeMap[tab];
-            const isActive = location.pathname === route; // highlight check
+            const isActive = location.pathname === route;
 
             return (
               <button
@@ -61,12 +71,12 @@ export default function Layout() {
                   padding: "0.75rem",
                   borderRadius: "16px",
                   fontFamily: "qurova",
-                  fontSize: "1.25rem",
+                  fontSize: "1.5rem",
                   transition: "all 0.2s ease",
-                  lineHeight: "1.5",        // ✅ removes extra vertical spacing
-                  display: "flex",        // ✅ makes centering consistent
+                  lineHeight: "1.5",
+                  display: "flex",
                   alignItems: "center",
-                  justifyContent: "center"
+                  justifyContent: "center",
                 }}
                 onMouseEnter={(e) => {
                   if (!isActive) {
@@ -88,10 +98,16 @@ export default function Layout() {
         </nav>
       </div>
 
-      {/* Main content (swaps per route) */}
-      <div style={{ flex: 1, overflow: "auto" }}>
-        <Outlet />
-      </div>
+      {/* Main content */}
+      <div
+        style={{
+          flex: 1,
+          overflow: "auto",
+          padding: location.pathname === "/bits" || location.pathname === "/" ? "0" : "1rem", // remove padding for Bit Breakdown
+        }}
+>
+  <Outlet />
+</div>
     </div>
   );
 }

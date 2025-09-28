@@ -121,14 +121,14 @@ export default function CalendarTab() {
       {/* Sidebar */}
 
       {/* Calendar */}
-      <div style={{ flex: 1, padding: "2rem", overflowX: "auto" }}>
+      <div style={{ flex: 1, padding: "1.6rem", overflowX: "auto" }}>
         {/* Month Navigation */}
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: "1rem",
+            marginBottom: "2rem",
             fontFamily: "qurova",
             fontSize: "1.8rem",
           }}
