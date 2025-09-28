@@ -3,14 +3,25 @@ body {
   margin: 0;
   padding: 0;
 }
-nav a {
+a {
   text-decoration: none;
-  padding: 0.5rem 1rem;
-  color: black;
-  font-weight: bold;
+  color: #0077ff;
 }
-nav a:hover {
-  color: white;
-  background-color: #0077ff;
-  border-radius: 4px;
+a:hover {
+  text-decoration: underline;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('./assets/Montserrat-VariableFont_wght.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'qurova';
+  src: url('./assets/QurovademoSemibold-xRZqR.otf') format('opentype');
+}
+
+body {
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
 }
