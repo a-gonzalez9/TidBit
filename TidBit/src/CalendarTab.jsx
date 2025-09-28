@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Modal from "react-modal";
 import { addDays, startOfWeek, format, isToday } from "date-fns";
-import Task from "./Task";
+import Task from "./Task.js";
 import "./index.css";
 import { useNavigate } from "react-router-dom";
 
@@ -22,6 +22,7 @@ export default function CalendarTab() {
     time: "",
     description: "",
     priority: "Medium",
+    breakdown: [],
   });
 
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
@@ -44,33 +45,73 @@ export default function CalendarTab() {
   const handleChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newTask = new Task(
-      formData.task,
-      formData.date,
-      formData.time,
-      formData.description,
-      formData.priority
-    );
 
-    const updatedTasks =
-      editingTaskIndex !== null
-        ? tasks.map((t, i) => (i === editingTaskIndex ? newTask : t))
-        : [...tasks, newTask];
+    // Create new task object
+    const newTask = {
+      task: formData.task,
+      date: formData.date,
+      time: formData.time,
+      description: formData.description,
+      priority: formData.priority,
+      breakdown: [],
+    };
 
+    // Update state
+    const updatedTasks = [...tasks, newTask];
     setTasks(updatedTasks);
 
+    // Reset form and close modal
     setFormData({
       task: "",
       date: "",
       time: "",
       description: "",
       priority: "Medium",
+      breakdown: [],
     });
 
     closeModal();
+
+    // Send tasks to backend (via Vite proxy)
+    try {
+      const response = await fetch("/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedTasks),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("Breakdown from backend:", result);
+
+      const processedTask = result.tasks[result.tasks.length - 1];
+
+      const classNewTask = new Task(
+        updatedTasks.length,
+        newTask.task,
+        newTask.description,
+        newTask.priority,
+        newTask.date,
+        newTask.time,
+        processedTask.breakdown
+      );
+
+      // Save task (Calendar handles localStorage)
+      classNewTask.save();
+      console.log("Updated Tasks:", Task.getAll()); 
+
+    } catch (error) {
+      console.error("Error sending tasks to backend:", error);
+    }
+
+    console.log("Worked!");
   };
+
 
   const prevWeek = () => setCurrentWeek((prev) => addDays(prev, -7));
   const nextWeek = () => setCurrentWeek((prev) => addDays(prev, 7));
