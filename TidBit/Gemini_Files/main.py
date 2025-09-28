@@ -11,6 +11,7 @@ def generate_task_breakdown(task_description):
         - If the description mentions a range (e.g., “questions 1–10”), expand it into individual steps.
         - If the description includes general instructions (e.g., “write an essay”), split it into logical sub-steps.
         - Do NOT do self-explanatory steps like “Understand the assignment” or “Gather materials” unless explicitly mentioned.
+        - Try to keep below 10 steps unless absolutely necessary.
         - Always add a final step to review and submit the work.
         Description: {task_description}
     """
